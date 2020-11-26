@@ -5,7 +5,7 @@ final int bgColor=128;
 // Two global variables for time control between the draw() calls.
 // Time interval for step wise linear calculation, in seconds
 // and time keeper global variable (see below)
-float dt = 0.1; // dummy value, will be calculated on the fly ... 
+float dt = 10; // dummy value, will be calculated on the fly ... 
 // we need a variable to remember the time of last drawing the scene
 float timestamp = 0;
 
@@ -20,14 +20,14 @@ Thread s1;      // a metal spring with linear force law
 // Some properties of the starting scene: mass, position and velocity for m1
 float m0 = 1;
 int posx0 = 100;
-int posy0 = 100;
+int posy0 = 160;
 float v0x = 0;
 float v0y = 0;
 
 
 // Setup the scene
 void setup() {
-
+  frameRate(5);
   // drawing environment setup
   size(200, 400);
   ellipseMode(CENTER);
@@ -52,7 +52,7 @@ void setup() {
   // create a Spring from 100,0 to 100,100, 
   // regular length (no force) of 100, spring constant 0.1 N/m
   // (the second point shall be the position of the mass m1
-  s1 = new Thread(posx0-30,posy0,posx0,posy0);
+  s1 = new Thread(posx0-30,posy0-60,posx0,posy0);
   s1.draw();
   line(0,100,200,100); // starting height
   
@@ -83,7 +83,7 @@ void draw() {
   
   // Spring force:
   PVector fs = new PVector();
-  fs.set(s1.getForce(fg));
+  fs.set(s1.getForce(fg,m1.v).mult(m1.m));
   // Calculate overall force
   f.add(fg);
   f.add(fs);
