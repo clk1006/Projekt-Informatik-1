@@ -1,4 +1,4 @@
-public PVector substract(PVector a,PVector b){
+public PVector sub(PVector a,PVector b){
   return new PVector(a.x-b.x,a.y-b.y);
 }
 public PVector add(PVector a,PVector b){
@@ -16,7 +16,7 @@ class Thread{
     force3=new PVector(0,0);
   }
   PVector getForce(PVector g,PVector v){
-    PVector f=substract(Pivot,endPoint);
+    PVector f=sub(Pivot,endPoint);
     f.normalize();
     PVector f2;
     if(f.x>0){
@@ -33,7 +33,7 @@ class Thread{
     f2.mult(g.mag());
     this.force2=f2.copy();
     //println("f2: "+f2);
-    f.set(substract(f2,g));
+    f.set(sub(f2,g));
     //println("f :"+f);
     this.force3=f.copy();
     println(add(f,g)==f2);
