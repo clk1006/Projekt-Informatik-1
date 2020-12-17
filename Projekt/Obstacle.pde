@@ -4,7 +4,7 @@ class Obstacle{
   ArrayList<boolean[]> sides=new ArrayList();
   private boolean getSide(PVector a,PVector b,PVector c){
     double m=(a.y-b.y)/(a.x-b.x);
-    return a.y+m*(a.x-c.x)>c.y;
+    return (a.y+m*(a.x-c.x))>c.y;
   }
   Obstacle(int... points){
     PVector corner=new PVector();
@@ -14,29 +14,32 @@ class Obstacle{
       }
       if(i%2==1){
         corner.y=points[i];
-        corners.add(corner);
+        corners.add(corner.copy());
       }
     }
   }
   public boolean checkCollision(Mass m,int id){
-    boolean[] sidesNew = new boolean[corners.size()];
+    if(id>(sides.size()-1)){
+      sides.add(new boolean[corners.size()]);
+      return false;
+    }
     for(int i=0;i<corners.size();i++){
       if(i+1==corners.size()){
-        sidesNew[i]=getSide(corners.get(i),corners.get(0),m.r);
+        boolean side=getSide(corners.get(i),corners.get(0),m.r);
+        if(side!=sides.get(id)[i]&&((corners.get(i).x<m.r.x&&m.r.x<corners.get(0).x)||(corners.get(0).x<m.r.x&&m.r.x<corners.get(i).x))){
+          sides.get(id)[i]=side;
+          return true;
+        }
       }
       else{
-        sidesNew[i]=getSide(corners.get(i),corners.get(i+1),m.r);
+        boolean side=getSide(corners.get(i),corners.get(i+1),m.r);
+        if(side!=sides.get(id)[i]&&((corners.get(i).x<m.r.x&&m.r.x<corners.get(i+1).x)||(corners.get(i+1).x<m.r.x&&m.r.x<corners.get(i).x))){
+          sides.get(id)[i]=side;
+          return true;
+        }
       }
     }
-    if(id>sides.size()){
-      sides.add(sidesNew);
-      return false;
-    }
-    if(sidesNew==sides.get(id)){
-      return false;
-    }
-    sides.set(id,sidesNew);
-    return true;
+    return false;
   }
   PVector calculateRebounce(Mass m){
     int indexNearest=0;
@@ -62,21 +65,15 @@ class Obstacle{
     c.normalize();
     PVector v=m.v;
     v.normalize();
-    float angle;
-    PVector base=new PVector(0,1);
-    if(PVector.angleBetween(base,v)<PVector.angleBetween(base,c)){
-      angle=PVector.angleBetween(v,c);
-      angle=angle-(PI-2*angle);
-    }
-    else{
-      angle=PVector.angleBetween(c,v);
-      angle=angle+(PI-2*angle);
-    }
+    println(c,v);
+    float angle=PVector.angleBetween(v,c);
     v=PVector.fromAngle(angle);
+    v.y=-v.y;
     v.mult(m.v.mag());
     return v;
   }
   public void draw(){
+    //println(corners);
     for(int i=0;i<corners.size();i++){
       int a=i+1;
       if(a==corners.size()){
