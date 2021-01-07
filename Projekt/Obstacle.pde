@@ -18,57 +18,59 @@ class Obstacle{
       }
     }
   }
-  public boolean checkCollision(Mass m,int id){
+  public Return checkCollision(Mass m,int id){
     if(id>(sides.size()-1)){
       sides.add(new boolean[corners.size()]);
-      return false;
+      return new Return(false,0);
     }
+    PVector r=m.r.copy();
+    r.add(m.v.copy().normalize().mult(m.size/2));
+    //println(r);
     for(int i=0;i<corners.size();i++){
       if(i+1==corners.size()){
-        boolean side=getSide(corners.get(i),corners.get(0),m.r);
-        if(side!=sides.get(id)[i]&&((corners.get(i).x<m.r.x&&m.r.x<corners.get(0).x)||(corners.get(0).x<m.r.x&&m.r.x<corners.get(i).x))){
+        boolean side=getSide(corners.get(i),corners.get(0),r);
+        if(side!=sides.get(id)[i]){
           sides.get(id)[i]=side;
-          return true;
+          if(between(corners.get(i).x,r.x,corners.get(0).x)){
+            println(i);
+            return new Return(true,i); 
+          }
         }
       }
       else{
-        boolean side=getSide(corners.get(i),corners.get(i+1),m.r);
-        if(side!=sides.get(id)[i]&&((corners.get(i).x<m.r.x&&m.r.x<corners.get(i+1).x)||(corners.get(i+1).x<m.r.x&&m.r.x<corners.get(i).x))){
+        boolean side=getSide(corners.get(i),corners.get(i+1),r);
+        if(side!=sides.get(id)[i]){
           sides.get(id)[i]=side;
-          return true;
+          if(between(corners.get(i).x,r.x,corners.get(i+1).x)){
+            println(i);
+            return new Return(true,i); 
+          }
         }
       }
     }
-    return false;
+    return new Return(false,0);
   }
-  PVector calculateRebounce(Mass m){
-    int indexNearest=0;
-    double distNearest=dist(corners.get(0),m.r);
-    int indexSecondNearest=1;
-    double distSecondNearest=dist(corners.get(1),m.r);
-    for(int i=1;i<corners.size();i++){
-      if(dist(corners.get(i),m.r)<distNearest){
-        indexNearest=i;
-        distNearest=dist(corners.get(i),m.r);
-      }
-      else if(indexSecondNearest==indexNearest){
-        indexSecondNearest=i;
-      }
-      else if(dist(corners.get(i),m.r)<distSecondNearest){
-        indexSecondNearest=i;
-        distSecondNearest=dist(corners.get(i),m.r);
-      }
+  PVector calculateRebounce(Mass m,int side){
+    PVector a=corners.get(side);
+    PVector b;
+    if(side==corners.size()-1){
+      b=corners.get(0);
     }
-    PVector a=corners.get(indexNearest);
-    PVector b=corners.get(indexSecondNearest);
+    else{
+      b=corners.get(side+1);
+    }
     PVector c=sub(b,a);
     c.normalize();
-    PVector v=m.v;
+    PVector v=m.v.copy();
     v.normalize();
-    println(c,v);
     float angle=PVector.angleBetween(v,c);
-    v=PVector.fromAngle(angle);
-    v.y=-v.y;
+    if(((c.x<0&&v.x>0)||(c.x>0&&v.x<0))&&((c.y<0&&v.y>0)||(c.y>0&&v.y<0))){
+      c.x=-c.x;
+      c.y=-c.y;
+    }
+    println(v);
+    v=rotate(c,-degrees(angle));
+    println(v);
     v.mult(m.v.mag());
     return v;
   }
@@ -82,4 +84,12 @@ class Obstacle{
       line(corners.get(i).x,corners.get(i).y,corners.get(a).x,corners.get(a).y);
     }
   }
+}
+class Return{
+ public int side;
+ public boolean collided;
+ Return(boolean a,int b){
+   side=b;
+   collided=a;
+ }
 }

@@ -4,13 +4,15 @@ float dt = 10;
 float timestamp = 0;
 Gravity gravity = new Gravity();
 Mass m1;        // a point mass object
-Obstacle o1;
+Obstacle[] obstacles=new Obstacle[2];
+Mass[] masses=new Mass[1];
 void setup() {
   size(200, 400);
   ellipseMode(CENTER);
   fill(fillColor);
-  m1 = new Mass(1,100,100,0,0,10);
-  o1=new Obstacle(90,150,110,150,100,180);
+  masses[0]= new Mass(1,100,150,0,0,10);
+  obstacles[0]=new Obstacle(70,180,130,160);
+  obstacles[1]=new Obstacle(90,140,110,140,100,110);
   line(0,100,200,100);
 }
 void draw() {
@@ -18,22 +20,52 @@ void draw() {
     timestamp = millis();
     return;
   }
-  if(o1.checkCollision(m1,0)){
-    m1.v.set(o1.calculateRebounce(m1));
-  }
-  PVector f = new PVector(0,0,0);
-  PVector fg = gravity.getForce(m1.m);
-  f.add(fg);
   dt = (millis() - timestamp) / 1000.0;
-  m1.accel(f);
-  m1.move();
+  for(int i=0;i<obstacles.length;i++){
+    for(int a=0;a<masses.length;a++){
+      Return Collision=obstacles[i].checkCollision(masses[a],a);
+      if(Collision.collided){
+        masses[a].v.set(obstacles[i].calculateRebounce(masses[a],Collision.side));
+      }
+    }
+  }
+  for(int i=0;i<masses.length;i++){
+    PVector f = new PVector(0,0,0);
+    PVector fg = gravity.getForce(masses[i].m);
+    f.add(fg);
+    masses[i].accel(f);
+    masses[i].move(); 
+  }
   timestamp = millis();
   background(bgColor);
   line(0,100,200,100); 
   rect(0,101,200,400);
-  m1.draw();
-  o1.draw();
+  for(int i=0;i<obstacles.length;i++){
+    obstacles[i].draw();
+  }
+  for(int i=0;i<masses.length;i++){
+    masses[i].draw();
+  }
 }
 public double dist(PVector a,PVector b){
   return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
+}
+public PVector rotate(PVector origin, float degrees){
+  float mag=origin.mag();
+  origin.normalize();
+  float degreesOrigin=asin(origin.y);
+  if(cos(degreesOrigin)!=origin.x){
+   degreesOrigin+=PI; 
+  }
+  if(degreesOrigin>2*PI){
+    degreesOrigin-=2*PI;
+  }
+  degreesOrigin+=radians(degrees);
+  origin.y=sin(degreesOrigin);
+  origin.x=cos(degreesOrigin);
+  origin.mult(mag);
+  return origin;
+}
+boolean between(float a,float b,float c){
+  return (a<b&&b<c)||(c<b&&b<a);
 }
