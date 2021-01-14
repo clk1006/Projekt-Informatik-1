@@ -53,19 +53,20 @@ public double dist(PVector a,PVector b){
 public PVector rotate(PVector origin, float degrees){
   float mag=origin.mag();
   origin.normalize();
-  float degreesOrigin=asin(origin.y);
-  if(cos(degreesOrigin)!=origin.x){
-   degreesOrigin+=PI; 
-  }
-  if(degreesOrigin>2*PI){
-    degreesOrigin-=2*PI;
-  }
+  float degreesOrigin=getAngle(origin);
   degreesOrigin+=radians(degrees);
   origin.y=sin(degreesOrigin);
   origin.x=cos(degreesOrigin);
   origin.mult(mag);
   return origin;
 }
-boolean between(float a,float b,float c){
+public boolean between(float a,float b,float c){
   return (a<b&&b<c)||(c<b&&b<a);
+}
+public float getAngle(PVector a){
+  float angle=asin(a.y);
+  if(abs(cos(angle)-a.x)>0.0001){
+    angle+=PI; 
+  }
+  return degrees(angle);
 }

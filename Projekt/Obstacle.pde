@@ -24,15 +24,14 @@ class Obstacle{
       return new Return(false,0);
     }
     PVector r=m.r.copy();
-    r.add(m.v.copy().normalize().mult(m.size/2));
+    //r.add(m.v.copy().normalize().mult(m.size/2));
     //println(r);
     for(int i=0;i<corners.size();i++){
       if(i+1==corners.size()){
         boolean side=getSide(corners.get(i),corners.get(0),r);
         if(side!=sides.get(id)[i]){
           sides.get(id)[i]=side;
-          if(between(corners.get(i).x,r.x,corners.get(0).x)){
-            println(i);
+          if(between(corners.get(i).x,r.x,corners.get(0).x)||between(corners.get(i).y,r.y,corners.get(0).y)){
             return new Return(true,i); 
           }
         }
@@ -41,8 +40,7 @@ class Obstacle{
         boolean side=getSide(corners.get(i),corners.get(i+1),r);
         if(side!=sides.get(id)[i]){
           sides.get(id)[i]=side;
-          if(between(corners.get(i).x,r.x,corners.get(i+1).x)){
-            println(i);
+          if(between(corners.get(i).x,r.x,corners.get(i+1).x)||between(corners.get(i).y,r.y,corners.get(i+1).y)){
             return new Return(true,i); 
           }
         }
@@ -63,16 +61,9 @@ class Obstacle{
     c.normalize();
     PVector v=m.v.copy();
     v.normalize();
-    float angle=PVector.angleBetween(v,c);
-    if(((c.x<0&&v.x>0)||(c.x>0&&v.x<0))&&((c.y<0&&v.y>0)||(c.y>0&&v.y<0))){
-      c.x=-c.x;
-      c.y=-c.y;
-    }
-    println(v);
-    v=rotate(c,-degrees(angle));
-    println(v);
-    v.mult(m.v.mag());
-    return v;
+    PVector ret=rotate(c,(-getAngle(c))-getAngle(v));
+    ret.mult(m.v.mag());
+    return ret;
   }
   public void draw(){
     //println(corners);
