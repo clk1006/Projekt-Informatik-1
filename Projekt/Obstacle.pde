@@ -19,13 +19,20 @@ class Obstacle{
     }
   }
   public Return checkCollision(Mass m,int id){
+    PVector r=m.r.copy();
     if(id>(sides.size()-1)){
-      sides.add(new boolean[corners.size()]);
+      boolean[] sidesNew=new boolean[corners.size()];
+      for(int i=0;i<corners.size();i++){
+        if(i+1==corners.size()){
+          sidesNew[i]=getSide(corners.get(i),corners.get(0),r);
+        }
+        else{
+          sidesNew[i]=getSide(corners.get(i),corners.get(i+1),r);
+        }
+      }
+      sides.add(sidesNew);
       return new Return(false,0);
     }
-    PVector r=m.r.copy();
-    //r.add(m.v.copy().normalize().mult(m.size/2));
-    //println(r);
     for(int i=0;i<corners.size();i++){
       if(i+1==corners.size()){
         boolean side=getSide(corners.get(i),corners.get(0),r);
@@ -48,25 +55,23 @@ class Obstacle{
     }
     return new Return(false,0);
   }
-  PVector calculateRebounce(Mass m,int side){
+  PVector calculateRebounce(Mass m,int side,int id){ 
     PVector a=corners.get(side);
-    PVector b;
-    if(side==corners.size()-1){
-      b=corners.get(0);
-    }
-    else{
+    
+    PVector b=corners.get(0);
+    if(side!=corners.size()-1){
       b=corners.get(side+1);
     }
-    PVector c=sub(b,a);
+    PVector c=b.copy().sub(a);
     c.normalize();
     PVector v=m.v.copy();
     v.normalize();
-    PVector ret=rotate(c,(-getAngle(c))-getAngle(v));
+    PVector ret=rotate(c,getAngle(c)-getAngle(v));rotate(c.copy(),getAngle(c.copy())-getAngle(v.copy()));
     ret.mult(m.v.mag());
+    sides.get(id)[side]=!sides.get(id)[side];
     return ret;
   }
   public void draw(){
-    //println(corners);
     for(int i=0;i<corners.size();i++){
       int a=i+1;
       if(a==corners.size()){
