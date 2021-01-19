@@ -1,9 +1,9 @@
 final int fillColor=255;
 final int bgColor=128;
-float dt = 0.1;
+float dt = 10;
 float timestamp = 0;
 Gravity gravity = new Gravity();
-Mass m1;   
+Mass m1;        // a point mass object
 Obstacle[] obstacles=new Obstacle[2];
 Mass[] masses=new Mass[1];
 void setup() {
