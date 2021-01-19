@@ -3,84 +3,70 @@ final int bgColor=128;
 float dt = 0.1;
 float timestamp = 0;
 Gravity gravity = new Gravity();
-Mass m1;       
-Mass m2;   
-Spring s1;      
-float m0 = 10;
-int posx0 = 100;
-int posy0 = 100;
-float v0x = 00;
-float v0y = 00;
-float dalphax;
-float dalphay;
-float alphaGrad = 90;
-float alphaBogen = alphaGrad/180*3.14159;
-float d = 5000;
+Mass m1;   
+Obstacle[] obstacles=new Obstacle[2];
+Mass[] masses=new Mass[1];
 void setup() {
-  dalphax= sin(alphaBogen);
-  dalphay = cos(alphaBogen);
   size(200, 400);
   ellipseMode(CENTER);
   fill(fillColor);
-  m1 = new Mass();
-  m1.m = m0;
-  m1.setPos(100+round(100*dalphax), round(100*dalphay));
-  m1.v.set(v0x,v0y);
-  m1.draw();
-  m2 = new Mass();
-  m2.m = m0;
-  m2.setPos(posx0-50, posy0);
-  m2.v.set(v0x,v0y);
-  m2.draw();
-  s1 = new Spring(100, 0, 100+round(100*dalphax), round(100*dalphay), 100.0, d);
-  s1.draw();
+  masses[0]= new Mass(1,100,150,0,0,10);
+  obstacles[0]=new Obstacle(70,180,130,160);
+  obstacles[1]=new Obstacle(90,140,110,140,100,110);
   line(0,100,200,100);
 }
 void draw() {
-   if (timestamp == 0) {
+  if (timestamp == 0) {
     timestamp = millis();
     return;
   }
-  PVector f = new PVector(0,0,0);
-  
-  // Gravitation force: 
-  PVector fg = gravity.getForce(m1.m);
-  
-  // Spring force:
-  PVector fs = new PVector();
-  fs.set(s1.getForce());
-  
-  // Calculate overall force
-  f.add(fg);
-  f.add(fs);
-  
-  // calculate time difference (time interval) since last drawing
   dt = (millis() - timestamp) / 1000.0;
-  
-  // let the mass accelerate and move for this time interval 
-  m1.accel(f);
-  m1.move();
-  
-  // the spring end point must move with the mass center to its new location
-  // (while the spring starting point remains at its inital plpace) 
-  s1.setR1(m1.r);
-  
-  // dynamics of m2
-  fg = gravity.getForce(m1.m);
-  // let the mass accelerate and move for this time interval 
-  m2.accel(fg);
-  m2.move();
-  
-  // record time stamp for next step's interval calculation
+  for(int i=0;i<obstacles.length;i++){
+    for(int a=0;a<masses.length;a++){
+      Return Collision=obstacles[i].checkCollision(masses[a],a);
+      if(Collision.collided){
+        masses[a].v.set(obstacles[i].calculateRebounce(masses[a],Collision.side));
+      }
+    }
+  }
+  for(int i=0;i<masses.length;i++){
+    PVector f = new PVector(0,0,0);
+    PVector fg = gravity.getForce(masses[i].m);
+    f.add(fg);
+    masses[i].accel(f);
+    masses[i].move(); 
+  }
   timestamp = millis();
-
-  // and redraw the new scene
   background(bgColor);
-  // starting height line as orientation 
-  //line(0,100,200,100); 
-  rect(0,0,200,400);
-  // the objects
-  m1.draw();
-  s1.draw();
-  //m2.draw();
+  line(0,100,200,100); 
+  rect(0,101,200,400);
+  for(int i=0;i<obstacles.length;i++){
+    obstacles[i].draw();
+  }
+  for(int i=0;i<masses.length;i++){
+    masses[i].draw();
+  }
+}
+public double dist(PVector a,PVector b){
+  return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
+}
+public PVector rotate(PVector origin, float degrees){
+  float mag=origin.mag();
+  origin.normalize();
+  float degreesOrigin=getAngle(origin);
+  degreesOrigin+=radians(degrees);
+  origin.y=sin(degreesOrigin);
+  origin.x=cos(degreesOrigin);
+  origin.mult(mag);
+  return origin;
+}
+public boolean between(float a,float b,float c){
+  return (a<b&&b<c)||(c<b&&b<a);
+}
+public float getAngle(PVector a){
+  float angle=asin(a.y);
+  if(abs(cos(angle)-a.x)>0.0001){
+    angle+=PI; 
+  }
+  return degrees(angle);
 }
